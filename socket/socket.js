@@ -10,12 +10,13 @@ module.exports = {
                 console.log('user disconnected');
             });
 
+            socket.on('new user', handle('new user', socket));
             socket.on('chat message', handle('chat message'));
         });
     }
 };
 
-function handle(what) {
+function handle(what, socket) {
     switch (what) {
         case 'chat message': return function(obj) {
             console.log('[SRV] Received: ' + obj.msg + ' from: ' + obj.from);
@@ -24,7 +25,11 @@ function handle(what) {
                 msg: obj.msg || [],
                 from: sanitizeUsername(obj.from || ''),
             });
-        }
+        };
+        case 'new user': return function() {
+            // avoiding sending the new user a message notifying she just connected
+            socket.broadcast.emit('new user');
+        };
     }
 }
 

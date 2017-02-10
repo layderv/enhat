@@ -55,6 +55,11 @@
             $('#messages').append($('<li>').text(
                     obj.from + '> ' + aesjs.utils.utf8.fromBytes(aesCtr.decrypt(aesjs.utils.hex.toBytes(obj.msg)))
             ));
-        })
+        });
+
+        socket.emit('new user');
+        socket.on('new user', function() {
+            $('#messages').append($('<li>').text('A new user is online'));
+        });
     </script>
 {{/section}}
