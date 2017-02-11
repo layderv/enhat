@@ -28,7 +28,9 @@
 
         var minLen = 128;
 
+        var body = $('html, body');
         var message = $('#m');
+        var messages = $('#messages');
         var username = $('#username');
 
         var pass = $('#passw-encr');
@@ -36,11 +38,13 @@
         $('#btn').on('click', function(event) {
             event.preventDefault();
 
+            var txt = message.val();
+            if (txt.length < 1) return false;
+
             var key = aesjs.utils.hex.toBytes(sha256(pass.val()));
 
             var aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter());
 
-            var txt = message.val();
             var len = txt.length;
             if (txt.length < minLen)
                 txt = txt + rndString(minLen - txt.length);
@@ -65,14 +69,19 @@
             if (msg.length != obj.length)
                 msg = msg.substr(0, obj.length);
 
-            $('#messages').append($('<li>').text(
+            var newMsg = $('<li>');
+            messages.append(newMsg.text(
                     obj.from + '> ' + msg
             ));
+
+            body.scrollTop(newMsg.offset().top);
         });
 
         socket.emit('new user');
         socket.on('new user', function() {
-            $('#messages').append($('<li>').text('A new user is online'));
+            var newMsg = $('<li>');
+            messages.append(newMsg.text('A new user is online'));
+            body.scrollTop(newMsg.offset().top);
         });
 
         function rndString(len) {
