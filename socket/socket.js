@@ -24,6 +24,7 @@ function handle(what, socket) {
             io.emit('chat message', {
                 msg: obj.msg || [],
                 from: sanitizeUsername(obj.from || ''),
+                length: obj.length || obj.msg.length,
             });
         };
         case 'new user': return function() {

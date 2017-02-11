@@ -26,6 +26,8 @@
     <script>
         var socket = io();
 
+        var minLen = 128;
+
         var message = $('#m');
         var username = $('#username');
 
@@ -38,8 +40,15 @@
 
             var aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter());
 
+            var txt = message.val();
+            var len = txt.length;
+            if (txt.length < minLen)
+                txt = txt + Array(minLen - txt.length).join(0);
+            var msg = aesjs.utils.hex.fromBytes(aesCtr.encrypt(aesjs.utils.utf8.toBytes(txt)));
+
             socket.emit('chat message', {
-                msg: aesjs.utils.hex.fromBytes(aesCtr.encrypt(aesjs.utils.utf8.toBytes(message.val()))),
+                msg: msg,
+                length: len,
                 from: username.val(),
             });
 
@@ -52,8 +61,12 @@
 
             var aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter());
 
+            var msg = aesjs.utils.utf8.fromBytes(aesCtr.decrypt(aesjs.utils.hex.toBytes(obj.msg)));
+            if (msg.length != obj.length)
+                msg = msg.substr(0, obj.length);
+
             $('#messages').append($('<li>').text(
-                    obj.from + '> ' + aesjs.utils.utf8.fromBytes(aesCtr.decrypt(aesjs.utils.hex.toBytes(obj.msg)))
+                    obj.from + '> ' + msg
             ));
         });
 
