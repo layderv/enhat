@@ -4,8 +4,9 @@ module.exports = {
     init: function(server) {
         io = require('socket.io').listen(server);
         io.on('connection', function(socket) {
+            var date = new Date();
             console.log('*****************************************');
-            console.log('[SRV] a user connected; timestamp: ' + Date.now());
+            console.log('[SRV] a user connected; date:time: ' + date);
             console.log(socket.conn.request.headers);
             console.log('[SRV] remote address: ' + socket.conn.remoteAddress);
             console.log('*****************************************');
