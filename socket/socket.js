@@ -6,7 +6,7 @@ module.exports = {
         io.on('connection', function(socket) {
             var date = new Date();
             console.log('*****************************************');
-            console.log('[SRV] a user connected; date:time: ' + date);
+            console.log('[SRV] (' + date + ') a user connected');
             console.log(socket.conn.request.headers);
             console.log('[SRV] remote address: ' + socket.conn.remoteAddress);
             console.log('*****************************************');
@@ -24,12 +24,11 @@ module.exports = {
 function handle(what, socket) {
     switch (what) {
         case 'chat message': return function(obj) {
-            console.log('[SRV] Received: ' + obj.msg + ' from: ' + obj.from);
+            console.log('[SRV] Received: ', obj.msg, ' from: ', obj.usr);
 
             io.emit('chat message', {
-                msg: obj.msg || [],
-                from: sanitizeUsername(obj.from || ''),
-                length: obj.length || obj.msg.length,
+                msg: obj.msg || '',
+                usr: obj.usr,
             });
         };
         case 'new user': return function() {

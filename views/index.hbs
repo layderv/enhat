@@ -41,19 +41,13 @@
             var txt = message.val();
             if (txt.length < 1) return false;
 
-            var key = aesjs.utils.hex.toBytes(sha256(pass.val()));
 
-            var aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter());
-
-            var len = txt.length;
-            if (txt.length < minLen)
-                txt = txt + rndString(minLen - txt.length);
-            var msg = aesjs.utils.hex.fromBytes(aesCtr.encrypt(aesjs.utils.utf8.toBytes(txt)));
+            var msg = encrypt(txt, pass.val());
+            var usr = encrypt(username.val(), pass.val());
 
             socket.emit('chat message', {
                 msg: msg,
-                length: len,
-                from: username.val(),
+                usr: usr,
             });
 
             message.val('');
@@ -61,17 +55,12 @@
         });
 
         socket.on('chat message', function(obj) {
-            var key = aesjs.utils.hex.toBytes(sha256(pass.val()));
 
-            var aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter());
-
-            var msg = aesjs.utils.utf8.fromBytes(aesCtr.decrypt(aesjs.utils.hex.toBytes(obj.msg)));
-            if (msg.length != obj.length)
-                msg = msg.substr(0, obj.length);
-
+            var msg = decrypt(obj.msg, pass.val());
+            var usr = decrypt(obj.usr, pass.val());
             var newMsg = $('<li>');
             messages.append(newMsg.text(
-                    obj.from + '> ' + msg
+                    usr + '> ' + msg
             ));
 
             body.scrollTop(newMsg.offset().top);
@@ -92,6 +81,33 @@
             for (var i = 0; i != len; ++i)
                 s += chars[Math.round(Math.random() * (chars.length - 1))];
             return s;
+        }
+
+        function encrypt(str, pass) {
+            var key = aesjs.utils.hex.toBytes(sha256(pass));
+
+            var aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter());
+
+            var len = str.length;
+            if (str.length < minLen)
+                str = str + rndString(minLen - str.length);
+            var msg = aesjs.utils.hex.fromBytes(aesCtr.encrypt(aesjs.utils.utf8.toBytes(str)));
+
+            return {
+                len: len,
+                msg: msg,
+            }
+        }
+
+        function decrypt(obj, pass) {
+            var key = aesjs.utils.hex.toBytes(sha256(pass));
+
+            var aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter());
+
+            var str = aesjs.utils.utf8.fromBytes(aesCtr.decrypt(aesjs.utils.hex.toBytes(obj.msg)));
+            if (str.length != obj.len)
+                str = str.substr(0, obj.len);
+            return str;
         }
     </script>
 {{/section}}
